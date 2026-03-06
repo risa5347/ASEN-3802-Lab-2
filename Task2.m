@@ -1,15 +1,8 @@
 % ASEN 3802 Heat Conduction Lab
 % Analytical vs Experimental Temperature vs Time
 clear
-clc 
+clc
 close all
-
-%% Material Properties
-Brass = readmatrix("Brass_25V_237mA");
-k = 115;
-rho = 8500;
-cp = 380;
-alpha = k/(rho*cp);
 
 %% Geometry
 L = 0.1016;
@@ -17,54 +10,94 @@ L = 0.1016;
 % Thermocouple locations (m)
 x = 0.0127 : 0.0127 : L;  % Th1 -> Th8
 
-%% Steady State Parameters from Part 1
-H_an = 101.68;
-T0 = 19;
+%% Files
+files = { ...
+    "Aluminum_25V_240mA", ...
+    "Aluminum_30V_290mA", ...
+    "Brass_25V_237mA", ...
+    "Brass_30V_285mA", ...
+    "Steel_22V_203mA" };
 
-%% Time Vector
-t = linspace(0,max(Brass(:,1)),500);
+names = { ...
+    "Aluminum 25V 240mA", ...
+    "Aluminum 30V 290mA", ...
+    "Brass 25V 237mA", ...
+    "Brass 30V 285mA", ...
+    "Steel 22V 203mA" };
 
-%% Number of Modes
-N = 10;
-modes_array = 0:N;
+%% Material Properties
+k   = [960 960 380 380 500];      
+rho = [2810 2810 8500 8500 8000];
+cp  = [130 130 115 115 16.2];
 
-%% Analytical Temperature Matrix
+%% Steady State Parameters
+H_an = [94.88 132.1 101.68 146.73 544.07];
+T0   = [17 16.5 19 19 15];
 
-%% Analytical Temperature Matrix
-T_analytical = zeros(length(x), length(t));
-
-for i = 1:length(x)          % loop over thermocouples / spatial positions
-    for j = 1:length(t)      % loop over time
-        sum_term = 0;
-        for n = 1:N
-            lambda_n = (2*n - 1)*pi / (2*L);
-            b_n = (8 * H_an * L) / ((2*n - 1)^2 * pi^2) * (-1)^n;
-            sum_term = sum_term + b_n * sin(lambda_n * x(i)) * exp(-lambda_n^2 * alpha * t(j));
-        end
-        T_analytical(i,j) = T0 + H_an * x(i) + sum_term;   % steady + transient
-    end
-end
-%% Plot
+%% Create Figure Once
 figure
-hold on
 
-% Define colors for 8 thermocouples
-colors = lines(8);
+%% Loop Through Files
+for f = 1:length(files)
 
-for i = 1:8
-    % Analytical (solid)
-    plot(t, T_analytical(i,:), 'Color', colors(i,:), 'LineWidth', 2, 'LineStyle', '-');
-    
-    % Experimental (dashed)
-    plot(Brass(:,1), Brass(:,i+1), 'Color', colors(i,:), 'LineWidth', 2, 'LineStyle', '--');
+    data = readmatrix(files{f});
+
+    alpha = k(f)/(rho(f)*cp(f));
+    H = H_an(f);
+    T_initial = T0(f);
+
+    %% Time Vector
+    t = linspace(0,max(data(:,1)),500);
+
+    %% Number of Modes
+    N = 10;
+
+    %% Analytical Temperature Matrix
+    T_analytical = zeros(length(x), length(t));
+
+    for i = 1:length(x)
+        for j = 1:length(t)
+
+            sum_term = 0;
+
+            for n = 1:N
+                lambda_n = (2*n - 1)*pi/(2*L);
+                b_n = (8*H*L)/((2*n-1)^2*pi^2) * (-1)^n;
+
+                sum_term = sum_term + ...
+                    b_n*sin(lambda_n*x(i))*exp(-lambda_n^2*alpha*t(j));
+            end
+
+            T_analytical(i,j) = T_initial + H*x(i) + sum_term;
+
+        end
+    end
+
+    %% Subplot
+    subplot(2,3,f)
+    hold on
+
+    colors = lines(8);
+
+    for i = 1:8
+
+        plot(t, T_analytical(i,:), ...
+            'Color', colors(i,:), 'LineWidth',2,'LineStyle','-');
+
+        plot(data(:,1), data(:,i+1), ...
+            'Color', colors(i,:), 'LineWidth',2,'LineStyle','--');
+
+    end
+
+    xlabel('Time (s)')
+    ylabel('Temperature (°C)')
+    title(names{f})
+    grid on
+
 end
 
-xlabel('Time (s)')
-ylabel('Temperature (°C)')
-title('Model IA: Analytical vs Experimental Temperature vs Time')
-grid on
+%% Global Legend
+h1 = plot(nan,nan,'k-','LineWidth',2);
+h2 = plot(nan,nan,'k--','LineWidth',2);
 
-% Custom legend for line styles
-h1 = plot(nan, nan, 'k-', 'LineWidth', 2);   % Solid black (analytical)
-h2 = plot(nan, nan, 'k--', 'LineWidth', 2);  % Dashed black (experimental)
-legend([h1, h2], {'Analytical', 'Experimental'}, 'Location', 'northwest')
+legend([h1 h2],{'Analytical','Experimental'},'Position',[0.85 0.1 0.1 0.05])
