@@ -10,12 +10,8 @@ L = 0.1016;
 x = 0.0127:0.0127:L;
 
 %% Data files
-files = { ...
-    "Aluminum_25V_240mA", ...
-    "Aluminum_30V_290mA", ...
-    "Brass_25V_237mA", ...
-    "Brass_30V_285mA", ...
-    "Steel_22V_203mA"};
+files = {
+    "Aluminum_25V_240mA", "Aluminum_30V_290mA", "Brass_25V_237mA", "Brass_30V_285mA", "Steel_22V_203mA"};
 
 names = { ...
     "Aluminum 25V 240mA", ...
@@ -69,9 +65,8 @@ for f = 1:length(files)
 
                 % Model II Fourier coefficient
                 b_n = (-1)^n*(8*L*(M-H))/((2*n-1)^2*pi^2);
-                %b_n = 4*(H-M)*L*(-1)^n/(n*pi);
-                sum_term = sum_term + ...
-                    b_n*sin(lambda_n*x(i))*exp(-lambda_n^2*alpha*t(j));
+               
+                sum_term = sum_term + b_n*sin(lambda_n*x(i))*exp(-lambda_n^2*alpha*t(j));
 
             end
 

@@ -4,13 +4,13 @@ clear
 clc
 close all
 
-%% Geometry
+% Geometry
 L = 0.1016;
 
 % Thermocouple locations (m)
 x = 0.0127 : 0.0127 : L;  % Th1 -> Th8
 
-%% Files
+% Files
 files = { ...
     "Aluminum_25V_240mA", ...
     "Aluminum_30V_290mA", ...
@@ -25,19 +25,20 @@ names = { ...
     "Brass 30V 285mA", ...
     "Steel 22V 203mA" };
 
-%% Material Properties
+% Material Properties
 k   = [960 960 380 380 500];      
 rho = [2810 2810 8500 8500 8000];
 cp  = [130 130 115 115 16.2];
 
-%% Steady State Parameters
-H_an = [94.88 132.1 101.68 146.73 544.07];
+% Steady State Parameters
+H_an = [54.907 78.573 104.605 150.712 286.461];
+%^ Is now used as H_exp after part 2 task 3
 T0   = [17 16.5 19 19 15];
 
-%% Create Figure Once
+% Create Figure Once
 figure
 
-%% Loop Through Files
+% Loop Through Files
 for f = 1:length(files)
 
     data = readmatrix(files{f});
@@ -46,13 +47,13 @@ for f = 1:length(files)
     H = H_an(f);
     T_initial = T0(f);
 
-    %% Time Vector
+    % Time Vector
     t = linspace(0,max(data(:,1)),500);
 
-    %% Number of Modes
+    % Number of Modes
     N = 10;
 
-    %% Analytical Temperature Matrix
+    % Analytical Temperature Matrix
     T_analytical = zeros(length(x), length(t));
 
     for i = 1:length(x)
@@ -73,7 +74,7 @@ for f = 1:length(files)
         end
     end
 
-    %% Subplot
+    % Subplot
     subplot(2,3,f)
     hold on
 
@@ -92,11 +93,12 @@ for f = 1:length(files)
     xlabel('Time (s)')
     ylabel('Temperature (°C)')
     title(names{f})
+    sgtitle('IA')
     grid on
 
 end
 
-%% Global Legend
+% Global Legend
 h1 = plot(nan,nan,'k-','LineWidth',2);
 h2 = plot(nan,nan,'k--','LineWidth',2);
 
